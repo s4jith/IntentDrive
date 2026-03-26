@@ -1,6 +1,8 @@
 import torch
 from torch.utils.data import DataLoader, random_split
 import torch.optim as optim
+import os
+import datetime
 
 from dataset import TrajectoryDataset
 from model import TrajectoryLSTM
@@ -65,13 +67,34 @@ def best_of_k_loss(pred, gt, probs):
 
     prob_loss = torch.nn.functional.cross_entropy(probs, best_idx)
 
-    return traj_loss + 0.5 * prob_loss
+    # -----------------------------
+    # DIVERSITY REGULARIZATION
+    # -----------------------------
+    diversity_loss = 0
+    K = pred.size(1)
+    if K > 1:
+        for i in range(K):
+            for j in range(i + 1, K):
+                dist = torch.norm(pred[:, i] - pred[:, j], dim=2).mean(dim=1)
+                diversity_loss += torch.exp(-dist).mean()
+        diversity_loss /= (K * (K - 1) / 2)
+
+    return traj_loss + 0.5 * prob_loss + 0.1 * diversity_loss
 
 
 # ----------------------------
 # TRAIN
 # ----------------------------
 def train():
+    os.makedirs("log", exist_ok=True)
+    log_filename = os.path.join("log", f"train_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+    
+    def log_print(msg):
+        print(msg)
+        with open(log_filename, "a") as f:
+            f.write(msg + "\n")
+
+    log_print("Starting training...")
     samples = get_data()
     dataset = TrajectoryDataset(samples)
 
@@ -98,7 +121,7 @@ def train():
         total_loss = 0
 
         for obs, neighbors, future in train_loader:
-            pred, probs = model(obs, neighbors)
+            pred, probs, _ = model(obs, neighbors)
 
             loss = best_of_k_loss(pred, future, probs)
 
@@ -114,7 +137,7 @@ def train():
 
         with torch.no_grad():
             for obs, neighbors, future in val_loader:
-                pred, probs = model(obs, neighbors)
+                pred, probs, _ = model(obs, neighbors)
 
                 gt = future.unsqueeze(1)
 
@@ -126,17 +149,18 @@ def train():
                 ade += compute_ade(best_pred, future).item()
                 fde += compute_fde(best_pred, future).item()
 
-        print(f"Epoch {epoch+1}")
-        print(f"Train Loss: {total_loss:.4f}")
-        print(f"ADE: {ade:.4f}, FDE: {fde:.4f}")
-        print("-" * 40)
+        log_print(f"Epoch {epoch+1}")
+        log_print(f"Train Loss: {total_loss:.4f}")
+        log_print(f"ADE: {ade:.4f}, FDE: {fde:.4f}")
+        log_print("-" * 40)
 
         # Save best model
         if ade < best_ade:
+            log_print(f"New best model found! ADE improved from {best_ade:.4f} to {ade:.4f}")
             best_ade = ade
             torch.save(model.state_dict(), "best_social_model.pth")
 
-    print("Training complete!")
+    log_print("Training complete!")
 
 
 if __name__ == "__main__":

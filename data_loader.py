@@ -66,6 +66,7 @@ def build_trajectories(sample_annotations, pedestrian_instances):
 
 
 def create_windows(trajectories):
+    import math
     samples = []
 
     for traj in trajectories:
@@ -74,17 +75,24 @@ def create_windows(trajectories):
             # ---------------- MAIN TRAJECTORY ----------------
             window = traj[i:i+10]
 
-            x0, y0 = window[0]
-            window = [[x - x0, y - y0] for x, y in window]
+            x3, y3 = window[3]
+            window = [[x - x3, y - y3] for x, y in window]
 
             vel = []
             for j in range(len(window)):
                 if j == 0:
-                    vel.append([0, 0])
+                    vel.append([0, 0, 0, 0, 0])
                 else:
                     dx = window[j][0] - window[j-1][0]
                     dy = window[j][1] - window[j-1][1]
-                    vel.append([dx, dy])
+                    speed = math.hypot(dx, dy)
+                    if speed > 1e-5:
+                        sin_t = dy / speed
+                        cos_t = dx / speed
+                    else:
+                        sin_t = 0.0
+                        cos_t = 0.0
+                    vel.append([dx, dy, speed, sin_t, cos_t])
 
             obs = []
             for j in range(4):
@@ -92,7 +100,10 @@ def create_windows(trajectories):
                     window[j][0],
                     window[j][1],
                     vel[j][0],
-                    vel[j][1]
+                    vel[j][1],
+                    vel[j][2],
+                    vel[j][3],
+                    vel[j][4]
                 ])
 
             future = window[4:10]
@@ -107,26 +118,33 @@ def create_windows(trajectories):
                 if len(other_traj) < i + 4:
                     continue
 
-                x1, y1 = traj[i + 3]
+                x1, y1 = traj[i + 3] # Main trajectory center
                 x2, y2 = other_traj[i + 3]
 
-                dist = ((x1 - x2)**2 + (y1 - y2)**2)**0.5
+                dist = math.hypot(x1 - x2, y1 - y2)
 
                 if dist < 5.0:  # 🔥 radius
 
                     n_window = other_traj[i:i+4]
 
-                    x0_n, y0_n = n_window[0]
-                    n_window = [[x - x0_n, y - y0_n] for x, y in n_window]
+                    # Center around main trajectory's last observed timestep
+                    n_window = [[x - x1, y - y1] for x, y in n_window]
 
                     vel_n = []
                     for j in range(len(n_window)):
                         if j == 0:
-                            vel_n.append([0, 0])
+                            vel_n.append([0, 0, 0, 0, 0])
                         else:
                             dx = n_window[j][0] - n_window[j-1][0]
                             dy = n_window[j][1] - n_window[j-1][1]
-                            vel_n.append([dx, dy])
+                            speed = math.hypot(dx, dy)
+                            if speed > 1e-5:
+                                sin_t = dy / speed
+                                cos_t = dx / speed
+                            else:
+                                sin_t = 0.0
+                                cos_t = 0.0
+                            vel_n.append([dx, dy, speed, sin_t, cos_t])
 
                     n_obs = []
                     for j in range(4):
@@ -134,7 +152,10 @@ def create_windows(trajectories):
                             n_window[j][0],
                             n_window[j][1],
                             vel_n[j][0],
-                            vel_n[j][1]
+                            vel_n[j][1],
+                            vel_n[j][2],
+                            vel_n[j][3],
+                            vel_n[j][4]
                         ])
 
                     neighbors.append(n_obs)

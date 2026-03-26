@@ -1,6 +1,5 @@
 import torch
 from torch.utils.data import Dataset
-from dataset import TrajectoryDataset
 
 
 
@@ -24,13 +23,3 @@ class TrajectoryDataset(Dataset):
 
     def __getitem__(self, idx):
         return self.obs[idx], self.neighbors[idx], self.future[idx]
-
-samples = get_data()
-
-dataset = TrajectoryDataset(samples)
-
-obs, neighbors, future = dataset[0]
-
-print(obs.shape)
-print(len(neighbors))
-print(future.shape)

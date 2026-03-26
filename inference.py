@@ -14,35 +14,86 @@ model.eval()
 # PREPROCESS INPUT
 # ----------------------------
 def prepare_input(points):
-    x0, y0 = points[0]
-    norm = [(x - x0, y - y0) for x, y in points]
+    import math
+    x3, y3 = points[3]
+    window = [[x - x3, y - y3] for x, y in points]
+
+    vel = []
+    for j in range(len(window)):
+        if j == 0:
+            vel.append([0, 0, 0, 0, 0])
+        else:
+            dx = window[j][0] - window[j-1][0]
+            dy = window[j][1] - window[j-1][1]
+            speed = math.hypot(dx, dy)
+            if speed > 1e-5:
+                sin_t = dy / speed
+                cos_t = dx / speed
+            else:
+                sin_t = 0.0
+                cos_t = 0.0
+            vel.append([dx, dy, speed, sin_t, cos_t])
 
     obs = []
-    for i in range(len(norm)):
-        if i == 0:
-            dx, dy = 0, 0
-        else:
-            dx = norm[i][0] - norm[i-1][0]
-            dy = norm[i][1] - norm[i-1][1]
+    for j in range(4):
+        obs.append([
+            window[j][0],
+            window[j][1],
+            vel[j][0],
+            vel[j][1],
+            vel[j][2],
+            vel[j][3],
+            vel[j][4]
+        ])
 
-        obs.append([norm[i][0], norm[i][1], dx, dy])
-
-    return obs, (x0, y0)
+    return obs, (x3, y3)
 
 
 # ----------------------------
 # PREDICTION FUNCTION
 # ----------------------------
-def predict(points):
+def predict(points, neighbor_points_list=None):
+    if neighbor_points_list is None:
+        neighbor_points_list = []
+        
     obs, origin = prepare_input(points)
 
-    obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)  # (1,4,4)
+    obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)  # (1,4,7)
 
-    # 🔥 IMPORTANT: empty neighbors for inference
-    neighbors = [[]]  # batch size = 1
+    # Prepare neighbors exactly as the main trajectory
+    import math
+    x1, y1 = points[-1]
+    neighbors = []
+    for np_points in neighbor_points_list:
+        n_window = [[x - x1, y - y1] for x, y in np_points]
+        vel_n = []
+        for j in range(len(n_window)):
+            if j == 0:
+                vel_n.append([0, 0, 0, 0, 0])
+            else:
+                dx = n_window[j][0] - n_window[j-1][0]
+                dy = n_window[j][1] - n_window[j-1][1]
+                speed = math.hypot(dx, dy)
+                if speed > 1e-5:
+                    sin_t = dy / speed
+                    cos_t = dx / speed
+                else:
+                    sin_t = 0.0
+                    cos_t = 0.0
+                vel_n.append([dx, dy, speed, sin_t, cos_t])
+        
+        n_obs = []
+        for j in range(4):
+            n_obs.append([
+                n_window[j][0], n_window[j][1],
+                vel_n[j][0], vel_n[j][1], vel_n[j][2], vel_n[j][3], vel_n[j][4]
+            ])
+        neighbors.append(n_obs)
+
+    neighbors_batch = [neighbors]  # batch size = 1
 
     with torch.no_grad():
-        pred, probs = model(obs, neighbors)
+        pred, probs, attn_weights = model(obs, neighbors_batch)
 
     pred = pred.squeeze(0)
     probs = probs.squeeze(0)
@@ -54,7 +105,7 @@ def predict(points):
     pred_real[:, :, 0] += x0
     pred_real[:, :, 1] += y0
 
-    return pred_real, probs
+    return pred_real, probs, attn_weights
 
 
 # ----------------------------
