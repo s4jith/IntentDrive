@@ -39,6 +39,7 @@ class TrajectoryTransformer(nn.Module):
         # 4. GOAL-CONDITIONED ARCHITECTURE 
         # Base hidden context: Target (64) + Social (64) = 128
         self.hidden_dim = 128
+        self.future_len = 12  # Now predicting 6 seconds into future
         
         # Step A: Predict exactly K distinct endpoints (goals)
         self.goal_head = nn.Sequential(
@@ -51,7 +52,7 @@ class TrajectoryTransformer(nn.Module):
         self.traj_head = nn.Sequential(
             nn.Linear(self.hidden_dim + 2, 128),
             nn.ReLU(),
-            nn.Linear(128, 6 * 2) # 6 steps to reach the destination
+            nn.Linear(128, self.future_len * 2) # 12 steps to reach the destination
         )
 
         # 5. Probabilities of each mode
@@ -132,10 +133,10 @@ class TrajectoryTransformer(nn.Module):
             conditioned_context = torch.cat([h_final, goal_k], dim=1) # (B, 130)
             
             # Predict the path given the condition
-            traj_k = self.traj_head(conditioned_context).view(B, 1, 6, 2)
+            traj_k = self.traj_head(conditioned_context).view(B, 1, self.future_len, 2)
             trajs.append(traj_k)
             
-        traj = torch.cat(trajs, dim=1) # (B, K, 6, 2)
+        traj = torch.cat(trajs, dim=1) # (B, K, 12, 2)
 
         # 3. Mode Probabilities
         probs = self.prob_head(h_final)

@@ -59,7 +59,7 @@ def build_trajectories(sample_annotations, pedestrian_instances):
 
             current = ann_lookup[current['next']]
 
-        if len(traj) >= 10:
+        if len(traj) >= 16:  # 4 past + 12 future (6 seconds)
             trajectories.append(traj)
 
     return trajectories
@@ -70,10 +70,11 @@ def create_windows(trajectories):
     samples = []
 
     for traj in trajectories:
-        for i in range(len(traj) - 9):
+        # Require 16 frames: 4 history + 12 future
+        for i in range(len(traj) - 15):
 
             # ---------------- MAIN TRAJECTORY ----------------
-            window = traj[i:i+10]
+            window = traj[i:i+16]
 
             x3, y3 = window[3]
             window = [[x - x3, y - y3] for x, y in window]
@@ -106,7 +107,8 @@ def create_windows(trajectories):
                     vel[j][4]
                 ])
 
-            future = window[4:10]
+            # Future is now 12 steps (6 seconds)
+            future = window[4:16]
 
             # ---------------- NEIGHBORS ----------------
             neighbors = []
@@ -123,7 +125,8 @@ def create_windows(trajectories):
 
                 dist = math.hypot(x1 - x2, y1 - y2)
 
-                if dist < 5.0:  # 🔥 radius
+                # Expanded Social Radius to 50 meters to account for much longer timeframe
+                if dist < 50.0:  
 
                     n_window = other_traj[i:i+4]
 
