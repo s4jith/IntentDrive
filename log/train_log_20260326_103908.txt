@@ -1,0 +1,89 @@
+Starting training on cuda...
+Epoch 1
+Train Loss: 103.1767
+ADE: 4.3555, FDE: 8.2225
+----------------------------------------
+New best model found! ADE improved from inf to 4.3555
+Epoch 2
+Train Loss: 56.2896
+ADE: 2.8496, FDE: 5.1828
+----------------------------------------
+New best model found! ADE improved from 4.3555 to 2.8496
+Epoch 3
+Train Loss: 49.1823
+ADE: 3.1903, FDE: 5.5098
+----------------------------------------
+Epoch 4
+Train Loss: 48.2345
+ADE: 2.6470, FDE: 4.5957
+----------------------------------------
+New best model found! ADE improved from 2.8496 to 2.6470
+Epoch 5
+Train Loss: 47.2736
+ADE: 2.7049, FDE: 4.7452
+----------------------------------------
+Epoch 6
+Train Loss: 46.4766
+ADE: 2.7488, FDE: 4.8142
+----------------------------------------
+Epoch 7
+Train Loss: 48.0053
+ADE: 3.7162, FDE: 6.5636
+----------------------------------------
+Epoch 8
+Train Loss: 48.4638
+ADE: 3.0893, FDE: 5.4415
+----------------------------------------
+Epoch 9
+Train Loss: 49.6047
+ADE: 3.3526, FDE: 5.8376
+----------------------------------------
+Epoch 10
+Train Loss: 47.1799
+ADE: 2.7114, FDE: 4.7596
+----------------------------------------
+Epoch 11
+Train Loss: 47.2032
+ADE: 2.9368, FDE: 5.1080
+----------------------------------------
+Epoch 12
+Train Loss: 48.0049
+ADE: 2.8027, FDE: 5.0432
+----------------------------------------
+Epoch 13
+Train Loss: 46.5898
+ADE: 2.6436, FDE: 4.5624
+----------------------------------------
+New best model found! ADE improved from 2.6470 to 2.6436
+Epoch 14
+Train Loss: 45.4889
+ADE: 2.5400, FDE: 4.5371
+----------------------------------------
+New best model found! ADE improved from 2.6436 to 2.5400
+Epoch 15
+Train Loss: 46.5594
+ADE: 2.7685, FDE: 4.8601
+----------------------------------------
+Epoch 16
+Train Loss: 47.4040
+ADE: 2.6811, FDE: 4.6356
+----------------------------------------
+Epoch 17
+Train Loss: 46.8733
+ADE: 2.6209, FDE: 4.5227
+----------------------------------------
+Epoch 18
+Train Loss: 45.2984
+ADE: 2.4397, FDE: 4.3510
+----------------------------------------
+New best model found! ADE improved from 2.5400 to 2.4397
+Epoch 19
+Train Loss: 44.1284
+ADE: 2.3313, FDE: 4.1389
+----------------------------------------
+New best model found! ADE improved from 2.4397 to 2.3313
+Epoch 20
+Train Loss: 44.1171
+ADE: 2.5166, FDE: 4.4240
+----------------------------------------
+Training complete!

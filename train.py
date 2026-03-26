@@ -5,7 +5,7 @@ import os
 import datetime
 
 from dataset import TrajectoryDataset
-from model import TrajectoryLSTM
+from model import TrajectoryTransformer
 from data_loader import (
     load_json, extract_pedestrian_instances,
     build_trajectories, create_windows
@@ -56,14 +56,19 @@ def compute_fde(pred, gt):
 # ----------------------------
 # LOSS
 # ----------------------------
-def best_of_k_loss(pred, gt, probs):
-    gt = gt.unsqueeze(1)
+def best_of_k_loss(pred, goals, gt, probs):
+    gt_traj = gt.unsqueeze(1)  # (B, 1, 6, 2)
+    gt_goal = gt[:, -1, :].unsqueeze(1) # (B, 1, 2)
 
-    error = torch.norm(pred - gt, dim=3).mean(dim=2)
-
+    # Error calculation over the entire path 
+    error = torch.norm(pred - gt_traj, dim=3).mean(dim=2) # (B, K)
     min_error, best_idx = torch.min(error, dim=1)
 
     traj_loss = torch.mean(min_error)
+
+    # Goal Loss: force the network to explicitly predict accurate endpoints!
+    best_goals = goals[torch.arange(goals.size(0)), best_idx] # (B, 2)
+    goal_loss = torch.norm(best_goals - gt[:, -1, :], dim=1).mean()
 
     prob_loss = torch.nn.functional.cross_entropy(probs, best_idx)
 
@@ -75,17 +80,19 @@ def best_of_k_loss(pred, gt, probs):
     if K > 1:
         for i in range(K):
             for j in range(i + 1, K):
-                dist = torch.norm(pred[:, i] - pred[:, j], dim=2).mean(dim=1)
+                dist = torch.norm(pred[:, i] - pred[:, j], dim=2).mean(dim=1)  
                 diversity_loss += torch.exp(-dist).mean()
         diversity_loss /= (K * (K - 1) / 2)
 
-    return traj_loss + 0.5 * prob_loss + 0.1 * diversity_loss
+    return traj_loss + 0.5 * goal_loss + 0.5 * prob_loss + 0.1 * diversity_loss
 
 
 # ----------------------------
 # TRAIN
 # ----------------------------
 def train():
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     os.makedirs("log", exist_ok=True)
     log_filename = os.path.join("log", f"train_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
     
@@ -94,7 +101,7 @@ def train():
         with open(log_filename, "a") as f:
             f.write(msg + "\n")
 
-    log_print("Starting training...")
+    log_print(f"Starting training on {device}...")
     samples = get_data()
     dataset = TrajectoryDataset(samples)
 
@@ -111,7 +118,7 @@ def train():
         val_set, batch_size=64, collate_fn=collate_fn
     )
 
-    model = TrajectoryLSTM()
+    model = TrajectoryTransformer().to(device)
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     best_ade = float("inf")
@@ -121,9 +128,11 @@ def train():
         total_loss = 0
 
         for obs, neighbors, future in train_loader:
-            pred, probs, _ = model(obs, neighbors)
+            obs, future = obs.to(device), future.to(device)
 
-            loss = best_of_k_loss(pred, future, probs)
+            pred, goals, probs, _ = model(obs, neighbors)
+
+            loss = best_of_k_loss(pred, goals, future, probs)
 
             optimizer.zero_grad()
             loss.backward()
@@ -137,10 +146,10 @@ def train():
 
         with torch.no_grad():
             for obs, neighbors, future in val_loader:
-                pred, probs, _ = model(obs, neighbors)
-
+                obs, future = obs.to(device), future.to(device)
+                
+                pred, goals, probs, _ = model(obs, neighbors)
                 gt = future.unsqueeze(1)
-
                 error = torch.norm(pred - gt, dim=3).mean(dim=2)
                 best_idx = torch.argmin(error, dim=1)
 

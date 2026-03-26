@@ -1,12 +1,16 @@
 import torch
-from model import TrajectoryLSTM
+from model import TrajectoryTransformer
 
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # ----------------------------
 # LOAD MODEL
 # ----------------------------
-model = TrajectoryLSTM()
-model.load_state_dict(torch.load("best_social_model.pth", map_location="cpu"))
+model = TrajectoryTransformer().to(device)
+try:
+    model.load_state_dict(torch.load("best_social_model.pth", map_location=device))
+except:
+    print("Warning: could not load model weights, starting fresh.")
 model.eval()
 
 
@@ -58,7 +62,7 @@ def predict(points, neighbor_points_list=None):
         
     obs, origin = prepare_input(points)
 
-    obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0)  # (1,4,7)
+    obs = torch.tensor(obs, dtype=torch.float32).unsqueeze(0).to(device)  # (1,4,7)
 
     # Prepare neighbors exactly as the main trajectory
     import math
@@ -93,10 +97,13 @@ def predict(points, neighbor_points_list=None):
     neighbors_batch = [neighbors]  # batch size = 1
 
     with torch.no_grad():
-        pred, probs, attn_weights = model(obs, neighbors_batch)
+        pred, goals, probs, attn_weights = model(obs, neighbors_batch)
 
-    pred = pred.squeeze(0)
-    probs = probs.squeeze(0)
+    pred = pred.squeeze(0).cpu()
+    probs = probs.squeeze(0).cpu()
+
+    if attn_weights and attn_weights[0] is not None:
+        attn_weights = [w.cpu() for w in attn_weights]
 
     # convert back to real coordinates
     x0, y0 = origin
