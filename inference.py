@@ -1,16 +1,38 @@
+import os
+
 import torch
 from model import TrajectoryTransformer
+from model_fusion import TrajectoryTransformerFusion
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # ----------------------------
 # LOAD MODEL
 # ----------------------------
-model = TrajectoryTransformer().to(device)
-try:
-    model.load_state_dict(torch.load("best_social_model.pth", map_location=device))
-except:
-    print("Warning: could not load model weights, starting fresh.")
+USING_FUSION_MODEL = False
+
+if os.path.exists("best_social_model_fusion.pth"):
+    model = TrajectoryTransformerFusion(fusion_dim=3).to(device)
+    try:
+        model.load_state_dict(torch.load("best_social_model_fusion.pth", map_location=device))
+        USING_FUSION_MODEL = True
+        print("Inference: Loaded Phase 2 fusion checkpoint (best_social_model_fusion.pth).")
+    except Exception as e:
+        print(f"Warning: could not load fusion checkpoint ({e}). Falling back to base model.")
+        model = TrajectoryTransformer().to(device)
+        try:
+            model.load_state_dict(torch.load("best_social_model.pth", map_location=device))
+            print("Inference: Loaded base checkpoint (best_social_model.pth).")
+        except Exception as e2:
+            print(f"Warning: could not load base checkpoint ({e2}).")
+else:
+    model = TrajectoryTransformer().to(device)
+    try:
+        model.load_state_dict(torch.load("best_social_model.pth", map_location=device))
+        print("Inference: Loaded base checkpoint (best_social_model.pth).")
+    except Exception as e:
+        print(f"Warning: could not load model weights ({e}), starting fresh.")
+
 model.eval()
 
 
@@ -56,7 +78,7 @@ def prepare_input(points):
 # ----------------------------
 # PREDICTION FUNCTION
 # ----------------------------
-def predict(points, neighbor_points_list=None):
+def predict(points, neighbor_points_list=None, fusion_feats=None):
     if neighbor_points_list is None:
         neighbor_points_list = []
         
@@ -97,7 +119,14 @@ def predict(points, neighbor_points_list=None):
     neighbors_batch = [neighbors]  # batch size = 1
 
     with torch.no_grad():
-        pred, goals, probs, attn_weights = model(obs, neighbors_batch)
+        if USING_FUSION_MODEL:
+            if fusion_feats is None:
+                fusion_tensor = torch.zeros((1, 4, 3), dtype=torch.float32, device=device)
+            else:
+                fusion_tensor = torch.tensor(fusion_feats, dtype=torch.float32).unsqueeze(0).to(device)
+            pred, goals, probs, attn_weights = model(obs, neighbors_batch, fusion_tensor)
+        else:
+            pred, goals, probs, attn_weights = model(obs, neighbors_batch)
 
     pred = pred.squeeze(0).cpu()
     probs = probs.squeeze(0).cpu()
@@ -127,7 +156,7 @@ if __name__ == "__main__":
         (30, 0)
     ]
 
-    pred, probs = predict(points)
+    pred, probs, _ = predict(points)
 
     print("\nInput Points:")
     print(points)

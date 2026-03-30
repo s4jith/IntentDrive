@@ -1,0 +1,11 @@
+Starting Phase 2 fusion transfer-learning on cuda...
+Loaded base checkpoint: best_social_model.pth
+Missing keys count: 4
+Unexpected keys count: 0
+Epoch 1/1
+Train Loss: 12.7935
+Val ADE: 0.3376 | Val FDE: 0.6033
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion_smoke.pth
+Phase 2 fusion transfer-learning complete.

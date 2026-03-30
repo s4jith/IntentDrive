@@ -1,0 +1,112 @@
+Starting Phase 2 fusion transfer-learning on cuda...
+Loaded base checkpoint: best_social_model.pth
+Missing keys count: 4
+Unexpected keys count: 0
+Epoch 1/20
+Train Loss: 65.5357
+Val ADE: 0.6156 | Val FDE: 1.2312
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 2/20
+Train Loss: 56.6500
+Val ADE: 0.5946 | Val FDE: 1.1940
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 3/20
+Train Loss: 56.0646
+Val ADE: 0.5858 | Val FDE: 1.1780
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 4/20
+Train Loss: 55.4374
+Val ADE: 0.6033 | Val FDE: 1.2029
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 5/20
+Train Loss: 55.9516
+Val ADE: 0.5631 | Val FDE: 1.1335
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 6/20
+Train Loss: 55.3322
+Val ADE: 0.5689 | Val FDE: 1.1346
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 7/20
+Train Loss: 55.4077
+Val ADE: 0.5919 | Val FDE: 1.1571
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 8/20
+Train Loss: 56.1761
+Val ADE: 0.5631 | Val FDE: 1.1110
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 9/20
+Train Loss: 55.8096
+Val ADE: 0.5537 | Val FDE: 1.1110
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 10/20
+Train Loss: 54.9192
+Val ADE: 0.5792 | Val FDE: 1.1519
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 11/20
+Train Loss: 54.6190
+Val ADE: 0.5478 | Val FDE: 1.0888
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 12/20
+Train Loss: 53.8276
+Val ADE: 0.5591 | Val FDE: 1.1227
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 13/20
+Train Loss: 53.6254
+Val ADE: 0.5634 | Val FDE: 1.1099
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 14/20
+Train Loss: 54.4080
+Val ADE: 0.5755 | Val FDE: 1.1341
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 15/20
+Train Loss: 54.0686
+Val ADE: 0.5435 | Val FDE: 1.0881
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+New best fusion model saved: best_social_model_fusion.pth
+Epoch 16/20
+Train Loss: 54.3130
+Val ADE: 0.5643 | Val FDE: 1.1175
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 17/20
+Train Loss: 53.9868
+Val ADE: 0.5453 | Val FDE: 1.0961
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 18/20
+Train Loss: 54.8792
+Val ADE: 0.5470 | Val FDE: 1.0860
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 19/20
+Train Loss: 54.1207
+Val ADE: 0.5913 | Val FDE: 1.1831
+LR base=0.000200 | fusion=0.000800
+--------------------------------------------
+Epoch 20/20
+Train Loss: 56.1060
+Val ADE: 0.5547 | Val FDE: 1.1079
+LR base=0.000100 | fusion=0.000400
+--------------------------------------------
+Phase 2 fusion transfer-learning complete.

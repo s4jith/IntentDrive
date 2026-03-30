@@ -120,7 +120,7 @@ class TrajectoryTransformer(nn.Module):
 
         h_final = torch.stack(final_h)  # (B, 128)
 
-        # ✨ GOAL-CONDITIONED LOGIC ✨
+        # GOAL-CONDITIONED LOGIC
         # 1. Predict Goals (End-points at t=6)
         goals = self.goal_head(h_final)
         goals = goals.view(B, self.K, 2)  # (B, K, 2)
