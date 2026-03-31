@@ -283,8 +283,12 @@ The prediction endpoint returns a structured payload including multimodal trajec
 Train Loss: 2.1834
 ADE: 0.5491, FDE: 1.0873
 Current Learning Rate: 0.0005
+```
 
-###Model Efficiency
+
+### Model Efficiency
+
+```
 Transformer parameters: ~146K (very lightweight)
 Base: ~0.6 MB
 Fusion: ~0.6 MB
