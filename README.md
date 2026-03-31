@@ -274,29 +274,8 @@ The prediction endpoint returns a structured payload including multimodal trajec
 
 ---
 
-## Example Outputs
 
-### Prediction Response (abbreviated)
 
-```json
-{
-  "agents": [
-    {
-      "track_id": "ped_001",
-      "class": "pedestrian",
-      "trajectories": [
-        {"mode": 0, "probability": 0.61, "path": [[1.2, 0.4], [2.1, 0.7], "..."]},
-        {"mode": 1, "probability": 0.27, "path": [[0.9, 0.5], [1.4, 1.1], "..."]},
-        {"mode": 2, "probability": 0.12, "path": [[1.1, 0.3], [1.8, 0.2], "..."]}
-      ]
-    }
-  ],
-  "sensor_summary": {
-    "lidar_points": 412,
-    "radar_returns": 18
-  }
-}
-```
 
 ### Validation Metrics Output
 
@@ -304,8 +283,9 @@ The prediction endpoint returns a structured payload including multimodal trajec
 Train Loss: 2.1834
 ADE: 0.5491, FDE: 1.0873
 Current Learning Rate: 0.0005
+
+###Model Efficiency
 Transformer parameters: ~146K (very lightweight)
-Checkpoint size:
 Base: ~0.6 MB
 Fusion: ~0.6 MB
 ```
