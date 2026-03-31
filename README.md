@@ -159,11 +159,11 @@ The fusion variant (`backend/app/ml/model_fusion.py`) extends the base model wit
 
 | Stage | Latency |
 |---|---|
-| Detection model — Faster R-CNN (per frame) | 42 ms |
-| Sensor fusion — LiDAR + Radar lookup | 16 ms |
-| Transformer prediction head (per agent) | 18.6 ms |
-| Full end-to-end pipeline (2-frame loop) | ~137.3 ms |
-| Equivalent throughput | ~7.28 FPS |
+| Detection model — Faster R-CNN (per frame) | 30.7 ms |
+| Sensor fusion — LiDAR + Radar lookup | 12 ms |
+| Transformer prediction head (per agent) | 14.6 ms |
+| Full end-to-end pipeline (2-frame loop) | ~58 ms |
+| Equivalent throughput | ~17.24 FPS |
 
 ### Model Efficiency
 
