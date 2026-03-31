@@ -1,6 +1,6 @@
-# IntentDrive — BEV Vulnerable Road User Trajectory Prediction
+# IntentDrive — Road User Trajectory Prediction
 
-An end-to-end Bird's-Eye-View (BEV) trajectory forecasting system for vulnerable road users (VRUs). The system connects camera-based perception, lightweight multi-agent tracking, and a transformer-based social forecasting model through a structured FastAPI backend and a React visualization dashboard.
+An end-to-end trajectory forecasting system for vulnerable road users (VRUs). The system connects camera-based perception, lightweight multi-agent tracking, and a transformer-based social forecasting model through a structured FastAPI backend and a React visualization dashboard.
 
 > **Competition:** Computer Vision Challenge — AI and Computer Vision Track
 > **Team:** 4% | **Lead:** Sajith J | **Institution:** Sri Shakthi Institute of Engineering & Technology
