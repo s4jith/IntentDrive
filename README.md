@@ -193,12 +193,10 @@ venv\Scripts\activate          # Windows
 # source venv/bin/activate     # Linux / macOS
 
 # Install dependencies
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
-pip install fastapi uvicorn[standard] nuscenes-devkit opencv-python numpy
+pip install -r requirements.txt
+
 ```
 
-> For CPU-only inference, replace the PyTorch install URL with:
-> `https://download.pytorch.org/whl/cpu`
 
 ### Frontend
 
