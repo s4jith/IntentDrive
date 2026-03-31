@@ -1,8 +1,8 @@
 ﻿import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import numpy as np
-from inference import predict
-from map_renderer import render_map_patch
+from ..ml.inference import predict
+from .map_renderer import render_map_patch
 
 def plot_scene(
     points,

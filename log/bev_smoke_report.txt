@@ -1,0 +1,11 @@
+frame_count=404
+pipeline_has_error=False
+pipeline_agent_count=28
+pipeline_has_scene_geometry=True
+pipeline_has_map_layer=True
+pipeline_scene_source=camera-derived+hd-map
+route_count=9
+has_health_route=True
+has_live_frames_route=True
+has_predict_two_image_route=True
+has_predict_live_fusion_route=True

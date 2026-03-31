@@ -5,10 +5,14 @@ from PIL import Image, ImageDraw
 import os
 import math
 import numpy as np
+from pathlib import Path
 
 # Import our Brain and Visualization modules directly!
-from model import TrajectoryTransformer
-from visualization import plot_scene
+from backend.app.ml.model import TrajectoryTransformer
+from backend.app.legacy.visualization import plot_scene
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+CV_SYNC_CKPT = REPO_ROOT / "models" / "best_cv_synced_model.pth"
 
 # 1. Perception Logic
 TARGET_CLASSES = {1: 'Person', 2: 'Bicycle', 3: 'Car', 4: 'Motorcycle'}
@@ -146,7 +150,7 @@ if __name__ == '__main__':
     ai_model = TrajectoryTransformer().to(device)
     # Load the synced weights we just made!
     try:
-         ai_model.load_state_dict(torch.load("best_cv_synced_model.pth"))
+            ai_model.load_state_dict(torch.load(CV_SYNC_CKPT, map_location=device))
     except:
          pass
     ai_model.eval()

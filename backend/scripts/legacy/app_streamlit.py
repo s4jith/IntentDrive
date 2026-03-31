@@ -23,8 +23,8 @@ from torchvision.models.detection import (
     keypointrcnn_resnet50_fpn,
 )
 
-from inference import USING_FUSION_MODEL, predict as trajectory_predict
-from sensor_fusion import load_fusion_for_cam_frame, radar_stabilize_motion
+from backend.app.ml.inference import USING_FUSION_MODEL, predict as trajectory_predict
+from backend.app.ml.sensor_fusion import load_fusion_for_cam_frame, radar_stabilize_motion
 
 # ----------------------------
 # PAGE CONFIG

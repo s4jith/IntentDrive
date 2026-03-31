@@ -3,13 +3,17 @@ from torch.utils.data import DataLoader, random_split
 import torch.optim as optim
 import os
 import datetime
+from pathlib import Path
 
-from dataset import TrajectoryDataset
-from model import TrajectoryTransformer
-from data_loader import (
+from backend.app.legacy.dataset import TrajectoryDataset
+from backend.app.ml.model import TrajectoryTransformer
+from backend.app.legacy.data_loader import (
     load_json, extract_pedestrian_instances,
     build_trajectories, create_windows
 )
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+MODEL_DIR = REPO_ROOT / "models"
 
 
 # ----------------------------
@@ -94,7 +98,9 @@ def train():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     os.makedirs("log", exist_ok=True)
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
     log_filename = os.path.join("log", f"train_log_{datetime.datetime.now().strftime('%Y%m%d_%H%M%S')}.txt")
+    best_model_path = MODEL_DIR / "best_social_model.pth"
     
     def log_print(msg):
         print(msg)
@@ -176,7 +182,7 @@ def train():
         if ade < best_ade:
             log_print(f"New best model found! ADE improved from {best_ade:.4f} to {ade:.4f}")
             best_ade = ade
-            torch.save(model.state_dict(), "best_social_model.pth")
+            torch.save(model.state_dict(), best_model_path)
             patience_counter = 0
         else:
             patience_counter += 1

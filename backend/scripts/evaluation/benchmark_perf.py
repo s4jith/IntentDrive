@@ -9,8 +9,8 @@ from torchvision.models.detection import (
     KeypointRCNN_ResNet50_FPN_Weights,
 )
 
-from sensor_fusion import load_fusion_for_cam_frame
-from inference import predict, USING_FUSION_MODEL
+from backend.app.ml.sensor_fusion import load_fusion_for_cam_frame
+from backend.app.ml.inference import predict, USING_FUSION_MODEL
 
 
 def main():

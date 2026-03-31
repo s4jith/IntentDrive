@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 
-from dataset import augment_data
+from .dataset import augment_data
 
 
 class FusionTrajectoryDataset(Dataset):

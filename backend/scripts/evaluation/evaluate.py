@@ -1,10 +1,14 @@
 import torch
 from torch.utils.data import DataLoader
-from dataset import TrajectoryDataset
-from model import TrajectoryTransformer
-from train import get_data, collate_fn, compute_ade, compute_fde
+from pathlib import Path
+from backend.app.legacy.dataset import TrajectoryDataset
+from backend.app.ml.model import TrajectoryTransformer
+from backend.scripts.training.train import get_data, collate_fn, compute_ade, compute_fde
 import numpy as np
 import random
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+BASE_CKPT = REPO_ROOT / "models" / "best_social_model.pth"
 
 def evaluate():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')       
@@ -24,8 +28,8 @@ def evaluate():
     # Load Model
     model = TrajectoryTransformer().to(device)
     try:
-        model.load_state_dict(torch.load('best_social_model.pth', map_location=device, weights_only=True))
-        print("Successfully loaded 'best_social_model.pth'")
+        model.load_state_dict(torch.load(BASE_CKPT, map_location=device, weights_only=True))
+        print("Successfully loaded 'best_social_model.pth' from models folder")
     except Exception as e:
         print(f"Could not load model weights: {e}")
         return

@@ -1,0 +1,82 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "task-test-write-file",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Set-Content -Path log/tasktest.txt -Value ok"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "smoke-map-layer",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				".\\venv\\Scripts\\python -c \"from pathlib import Path; from backend.app.services.pipeline import TrajectoryPipeline; p=TrajectoryPipeline(); frames=p.list_channel_image_paths('CAM_FRONT'); lines=[]; lines.append('frame_count=' + str(len(frames))); bundle=p.build_live_agents_bundle(anchor_idx=3, score_threshold=0.35, tracking_gate_px=130.0, use_pose=False) if len(frames)>=4 else {'error':'not-enough-frames'}; sg=bundle.get('scene_geometry') if isinstance(bundle,dict) else None; lines.append('has_error=' + str('error' in bundle)); lines.append('has_scene_geometry=' + str(sg is not None)); lines.append('has_map_layer=' + str(bool(sg and sg.get('map_layer')))); lines.append('scene_source=' + str(sg.get('source') if sg else 'none')); lines.append('agent_count=' + str(len(bundle.get('agents',[])) if isinstance(bundle,dict) else 0)); Path('log/map_layer_smoke.txt').write_text('\\n'.join(lines), encoding='utf-8')\""
+			],
+			"isBackground": false
+		},
+		{
+			"label": "smoke-verify-bev",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				".\\venv\\Scripts\\python -m backend.scripts.tools.smoke_verify_bev"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "frontend-build-check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location frontend; npm run build; Pop-Location"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "smoke-verify-bev",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				".\\venv\\Scripts\\python -m backend.scripts.tools.smoke_verify_bev"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "smoke-verify-bev",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				".\\venv\\Scripts\\python -m backend.scripts.tools.smoke_verify_bev"
+			],
+			"isBackground": false
+		},
+		{
+			"label": "frontend-build-check",
+			"type": "shell",
+			"command": "powershell",
+			"args": [
+				"-NoProfile",
+				"-Command",
+				"Push-Location frontend; npm run build; Pop-Location"
+			],
+			"isBackground": false
+		}
+	]
+}

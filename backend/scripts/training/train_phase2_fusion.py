@@ -2,19 +2,22 @@ import argparse
 import datetime
 import os
 import random
+from pathlib import Path
 
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
-from data_loader import (
+from backend.app.legacy.data_loader import (
     load_json,
     extract_pedestrian_instances,
     build_trajectories_with_sensor,
     create_windows_with_sensor,
 )
-from dataset_fusion import FusionTrajectoryDataset
-from model_fusion import TrajectoryTransformerFusion
+from backend.app.legacy.dataset_fusion import FusionTrajectoryDataset
+from backend.app.ml.model_fusion import TrajectoryTransformerFusion
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
 
 
 def collate_fn_fusion(batch):
@@ -74,6 +77,15 @@ def get_fusion_samples():
 
 def train_phase2(args):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    base_checkpoint = Path(args.base_checkpoint)
+    output_checkpoint = Path(args.output_checkpoint)
+
+    if not base_checkpoint.is_absolute():
+        base_checkpoint = REPO_ROOT / base_checkpoint
+    if not output_checkpoint.is_absolute():
+        output_checkpoint = REPO_ROOT / output_checkpoint
+
+    output_checkpoint.parent.mkdir(parents=True, exist_ok=True)
 
     os.makedirs("log", exist_ok=True)
     log_filename = os.path.join(
@@ -117,13 +129,13 @@ def train_phase2(args):
 
     model = TrajectoryTransformerFusion(fusion_dim=3).to(device)
 
-    if os.path.exists(args.base_checkpoint):
-        missing, unexpected = model.load_from_base_checkpoint(args.base_checkpoint, map_location=device)
-        log_print(f"Loaded base checkpoint: {args.base_checkpoint}")
+    if base_checkpoint.exists():
+        missing, unexpected = model.load_from_base_checkpoint(str(base_checkpoint), map_location=device)
+        log_print(f"Loaded base checkpoint: {base_checkpoint}")
         log_print(f"Missing keys count: {len(missing)}")
         log_print(f"Unexpected keys count: {len(unexpected)}")
     else:
-        log_print(f"Base checkpoint not found: {args.base_checkpoint}")
+        log_print(f"Base checkpoint not found: {base_checkpoint}")
 
     base_params = []
     fusion_params = []
@@ -205,8 +217,8 @@ def train_phase2(args):
         if val_ade < best_val_ade:
             best_val_ade = val_ade
             patience_counter = 0
-            torch.save(model.state_dict(), args.output_checkpoint)
-            log_print(f"New best fusion model saved: {args.output_checkpoint}")
+            torch.save(model.state_dict(), output_checkpoint)
+            log_print(f"New best fusion model saved: {output_checkpoint}")
         else:
             patience_counter += 1
 
@@ -225,8 +237,8 @@ if __name__ == "__main__":
     parser.add_argument("--fusion-lr", type=float, default=8e-4)
     parser.add_argument("--patience", type=int, default=8)
     parser.add_argument("--max-samples", type=int, default=0, help="Use first N samples for quick debug run. 0 = full data.")
-    parser.add_argument("--base-checkpoint", type=str, default="best_social_model.pth")
-    parser.add_argument("--output-checkpoint", type=str, default="best_social_model_fusion.pth")
+    parser.add_argument("--base-checkpoint", type=str, default="models/best_social_model.pth")
+    parser.add_argument("--output-checkpoint", type=str, default="models/best_social_model_fusion.pth")
     args = parser.parse_args()
 
     train_phase2(args)

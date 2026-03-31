@@ -18,26 +18,97 @@ To eliminate vision latency and maximize compute efficiency, our model trains pu
 3. **Goal-Conditioned Decoding**: The Transformer splits trajectory prediction into two tasks: first predicting the final 6-second physical endpoint (Goal), then rendering the continuous curve to reach it.
 4. **Native BEV Map Render Synthesis**: The app dynamically intercepts raw image rasters from the `v1.0-mini` metadata, converting grayscale masks into RGBA transparency layers. It overlays the predicted mathematical trajectory directly onto the actual HD road layer for visual confirmation.
 
-## How to use
-**Activate Virtual Environment:**
+## How to Use
+**Activate virtual environment:**
 ```bash
 .\venv\Scripts\Activate.ps1
 ```
 
-**1. Train the Core Transformer:**
+**1. Run Backend (FastAPI):**
 ```bash
-python train.py
+.\venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+.\venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
 ```
-*Current configuration computes trajectory losses, goal-accuracy loss, and diverse mode pushing over 50 epochs on GPU execution.*
 
-**2. Generate Hackathon Metrics Report:**
+**2. Run Frontend (Vite + React):**
 ```bash
-python evaluate.py
+cd frontend
+npm install
+npm run dev
 ```
-*Calculates deep validation metrics required by judges, including Average Displacement Error (ADE), Final Displacement Error (FDE), and standard Miss Rate (>2.0m).*
 
-**3. Run the Interactive Dashboard:**
+**3. Optional legacy training/evaluation scripts:**
 ```bash
-streamlit run app.py
+python -m backend.scripts.training.train
+python -m backend.scripts.evaluation.evaluate
 ```
-*Runs the custom prediction engine. Accepts custom (X,Y) coordinate points manually typed by the user, mathematically scales the tracking history, calculates social attention to nearby neighbors dynamically, and plots the scaled output directly onto the real-world dataset map patch.*
+
+Note: root-level script wrappers were removed during cleanup. Run training/evaluation/data utilities via `python -m backend.scripts...` module paths.
+Checkpoint files are now centralized in the `models/` folder at repository root.
+
+## Phase 1 Folder Structure
+
+The repository now includes a clean split for migration work:
+
+```text
+backend/
+	app/
+		api/
+			dependencies.py
+			routes/
+				health.py
+				live.py
+				predict.py
+		core/
+			serialization.py
+			uploads.py
+		ml/
+			inference.py
+			model.py
+			model_fusion.py
+			sensor_fusion.py
+		legacy/
+			dataset.py
+			dataset_fusion.py
+			data_loader.py
+			cv_perception.py
+			map_renderer.py
+			visualization.py
+		services/
+			pipeline.py
+		main.py
+		schemas.py
+	scripts/
+		training/
+		evaluation/
+		data/
+		tools/
+		legacy/
+	requirements.txt
+
+frontend/
+	src/
+		App.tsx
+		api/client.ts
+		components/BevCanvas.tsx
+		components/CameraDetectionsPanel.tsx
+		types.ts
+	package.json
+```
+
+## Phase 1 Run Commands
+
+Backend (FastAPI):
+
+```bash
+.\venv\Scripts\python.exe -m pip install -r backend/requirements.txt
+.\venv\Scripts\python.exe -m uvicorn backend.app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+Frontend (TypeScript + Vite):
+
+```bash
+cd frontend
+npm install
+npm run dev
+```

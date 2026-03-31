@@ -1,34 +1,39 @@
-import os
+from pathlib import Path
 
 import torch
-from model import TrajectoryTransformer
-from model_fusion import TrajectoryTransformerFusion
+from .model import TrajectoryTransformer
+from .model_fusion import TrajectoryTransformerFusion
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+MODEL_DIR = REPO_ROOT / "models"
+FUSION_CKPT = MODEL_DIR / "best_social_model_fusion.pth"
+BASE_CKPT = MODEL_DIR / "best_social_model.pth"
 
 # ----------------------------
 # LOAD MODEL
 # ----------------------------
 USING_FUSION_MODEL = False
 
-if os.path.exists("best_social_model_fusion.pth"):
+if FUSION_CKPT.exists():
     model = TrajectoryTransformerFusion(fusion_dim=3).to(device)
     try:
-        model.load_state_dict(torch.load("best_social_model_fusion.pth", map_location=device))
+        model.load_state_dict(torch.load(FUSION_CKPT, map_location=device))
         USING_FUSION_MODEL = True
         print("Inference: Loaded Phase 2 fusion checkpoint (best_social_model_fusion.pth).")
     except Exception as e:
         print(f"Warning: could not load fusion checkpoint ({e}). Falling back to base model.")
         model = TrajectoryTransformer().to(device)
         try:
-            model.load_state_dict(torch.load("best_social_model.pth", map_location=device))
+            model.load_state_dict(torch.load(BASE_CKPT, map_location=device))
             print("Inference: Loaded base checkpoint (best_social_model.pth).")
         except Exception as e2:
             print(f"Warning: could not load base checkpoint ({e2}).")
 else:
     model = TrajectoryTransformer().to(device)
     try:
-        model.load_state_dict(torch.load("best_social_model.pth", map_location=device))
+        model.load_state_dict(torch.load(BASE_CKPT, map_location=device))
         print("Inference: Loaded base checkpoint (best_social_model.pth).")
     except Exception as e:
         print(f"Warning: could not load model weights ({e}), starting fresh.")

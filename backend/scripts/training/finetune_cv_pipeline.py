@@ -4,7 +4,14 @@ from torch.utils.data import Dataset, DataLoader
 import json
 import math
 import numpy as np
-import model as TransformerBrain # Importing our Hackathon AI Model
+from pathlib import Path
+from backend.app.ml import model as TransformerBrain # Importing our Hackathon AI Model
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+MODEL_DIR = REPO_ROOT / "models"
+BASE_CKPT = MODEL_DIR / "best_social_model.pth"
+CV_SYNC_CKPT = MODEL_DIR / "best_cv_synced_model.pth"
+EXTRACTED_DATA_JSON = REPO_ROOT / "extracted_training_data.json"
 
 print("[Step 1] Loading the Computer Vision Trajectory Data...")
 
@@ -75,20 +82,21 @@ def custom_collate(batch):
         future_batch.append(future)
     return torch.stack(obs_batch), neighbors_batch, torch.stack(future_batch)
 
-cv_dataset = ExtractedPhysDataset("extracted_training_data.json")
+cv_dataset = ExtractedPhysDataset(str(EXTRACTED_DATA_JSON))
 cv_loader = DataLoader(cv_dataset, batch_size=32, shuffle=True, collate_fn=custom_collate)
 
 print(f"[Step 2] Prepared {len(cv_dataset)} real-world tracks for Brain Transfer.")
 
 def fine_tune_ai_brain():
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    MODEL_DIR.mkdir(parents=True, exist_ok=True)
     print(f"\n[Step 3] Initializing Transformer Brain on {device.type.upper()}...")
     
     # Load our Hackathon specific Architecture
     ai_model = TransformerBrain.TrajectoryTransformer().to(device)
     
     try:
-        ai_model.load_state_dict(torch.load("best_social_model.pth"))
+        ai_model.load_state_dict(torch.load(BASE_CKPT, map_location=device))
         print("  -> Transplanted initial knowledge from base training!")
     except Exception as e:
         print("  -> Starting fresh brain mapping (No previous weights found or mismatch).")
@@ -123,8 +131,8 @@ def fine_tune_ai_brain():
         print(f"  | Epoch {epoch+1}/{EPOCHS} - Reality Mapping Loss: {total_loss/len(cv_loader):.4f}")
         
     print("\n[Step 5] Fine-Tuning Complete! Saving Real-World Synced Weights.")
-    torch.save(ai_model.state_dict(), "best_cv_synced_model.pth")
-    print(" >>> Final Brain State Saved: 'best_cv_synced_model.pth'. Ready to impress the judges!")
+    torch.save(ai_model.state_dict(), CV_SYNC_CKPT)
+    print(" >>> Final Brain State Saved: 'best_cv_synced_model.pth' in models folder. Ready to impress the judges!")
 
 if __name__ == '__main__':
     fine_tune_ai_brain()

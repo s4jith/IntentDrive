@@ -1,16 +1,20 @@
 import random
+from pathlib import Path
 
 import torch
 from torch.utils.data import DataLoader
 
-from data_loader import (
+from backend.app.legacy.data_loader import (
     load_json,
     extract_pedestrian_instances,
     build_trajectories_with_sensor,
     create_windows_with_sensor,
 )
-from dataset_fusion import FusionTrajectoryDataset
-from model_fusion import TrajectoryTransformerFusion
+from backend.app.legacy.dataset_fusion import FusionTrajectoryDataset
+from backend.app.ml.model_fusion import TrajectoryTransformerFusion
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+DEFAULT_FUSION_CKPT = REPO_ROOT / "models" / "best_social_model_fusion.pth"
 
 
 def collate_fn_fusion(batch):
@@ -39,9 +43,13 @@ def load_fusion_samples():
     return create_windows_with_sensor(trajectories)
 
 
-def evaluate_fusion(ckpt='best_social_model_fusion.pth'):
+def evaluate_fusion(ckpt=DEFAULT_FUSION_CKPT):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f"Running Phase 2 Fusion Evaluation on {device}...")
+
+    ckpt_path = Path(ckpt)
+    if not ckpt_path.is_absolute():
+        ckpt_path = REPO_ROOT / ckpt_path
 
     samples = load_fusion_samples()
     random.seed(42)
@@ -53,7 +61,7 @@ def evaluate_fusion(ckpt='best_social_model_fusion.pth'):
     loader = DataLoader(dataset, batch_size=64, collate_fn=collate_fn_fusion)
 
     model = TrajectoryTransformerFusion(fusion_dim=3).to(device)
-    model.load_state_dict(torch.load(ckpt, map_location=device))
+    model.load_state_dict(torch.load(ckpt_path, map_location=device))
     model.eval()
 
     total_ade = 0.0
