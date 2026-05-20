@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 
-import { API_BASE, getHealth, getLiveFrames, predictLiveFusion, predictTwoImage } from "./api/client";
+import { getHealth, getLiveFrames, predictLiveFusion, predictTwoImage } from "./api/client";
 import BevCanvas from "./components/BevCanvas";
 import CameraDetectionsPanel from "./components/CameraDetectionsPanel";
 import type { AgentState, HealthResponse, LiveFramesResponse, LiveFusionRequest, PredictionResponse } from "./types";
@@ -314,7 +314,6 @@ export default function App() {
           <h1>BEV Control Room</h1>
         </div>
         <div className="status-pills">
-          <span className="pill">API: {API_BASE}</span>
           <span className={`pill ${health?.status === "ok" ? "ok" : "warn"}`}>
             Backend {health?.status === "ok" ? "healthy" : "pending"}
           </span>
